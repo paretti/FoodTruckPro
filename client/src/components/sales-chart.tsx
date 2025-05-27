@@ -16,7 +16,7 @@ export default function SalesChart({ truckId }: SalesChartProps) {
     enabled: !!truckId,
   });
 
-  // Generate mock data for the chart since we don't have time-series sales data
+  // Generate chart data from real orders
   const generateChartData = () => {
     const days = timeRange === "7days" ? 7 : timeRange === "30days" ? 30 : 90;
     const data = [];
@@ -24,20 +24,22 @@ export default function SalesChart({ truckId }: SalesChartProps) {
     for (let i = days - 1; i >= 0; i--) {
       const date = new Date();
       date.setDate(date.getDate() - i);
+      const dateString = date.toISOString().split('T')[0];
       
-      // Generate realistic sales data based on day of week
-      const dayOfWeek = date.getDay();
-      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-      const baseAmount = isWeekend ? 800 : 1200;
-      const variance = Math.random() * 400 - 200; // ±200
-      const sales = Math.max(0, baseAmount + variance);
+      // Calculate actual sales from orders for this date
+      const dailyOrders = orders.filter(order => {
+        const orderDate = new Date(order.createdAt).toISOString().split('T')[0];
+        return orderDate === dateString && order.status === 'completed';
+      });
+      
+      const dailySales = dailyOrders.reduce((sum, order) => sum + Number(order.totalAmount), 0);
       
       data.push({
         date: date.toLocaleDateString('en-US', { 
           month: 'short', 
           day: 'numeric' 
         }),
-        sales: Math.round(sales),
+        sales: dailySales,
       });
     }
     
