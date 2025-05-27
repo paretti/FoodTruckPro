@@ -13,7 +13,7 @@
   --card-foreground: 222 47% 21%; /* #2D3436 */
   --border: 210 18% 91%; /* #E9ECEF */
   --input: 210 18% 91%; /* #E9ECEF */
-  --primary: 355 70% 70%; /* #FF6B6B */
+  --primary: 120 60% 50%; /* #4CAF50 - Warm Green */
   --primary-foreground: 0 0% 100%;
   --secondary: 172 42% 61%; /* #4ECDC4 */
   --secondary-foreground: 0 0% 100%;
@@ -36,7 +36,7 @@
   --card-foreground: 0 0% 98%;
   --border: 240 3.7% 15.9%;
   --input: 240 3.7% 15.9%;
-  --primary: 355 70% 70%; /* #FF6B6B */
+  --primary: 120 60% 50%; /* #4CAF50 - Warm Green */
   --primary-foreground: 0 0% 100%;
   --secondary: 172 42% 61%; /* #4ECDC4 */
   --secondary-foreground: 0 0% 100%;

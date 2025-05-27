@@ -43,7 +43,10 @@ export default function Dashboard() {
           <p className="text-muted-foreground mb-6">
             It looks like you haven't set up your food truck yet. Let's get started!
           </p>
-          <Button className="bg-primary hover:bg-primary/90">
+          <Button 
+            className="bg-primary hover:bg-primary/90"
+            onClick={() => window.location.href = '/profile'}
+          >
             <Plus className="h-4 w-4 mr-2" />
             Set Up Your Food Truck
           </Button>

@@ -1,3 +1,4 @@
+import React from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,13 +42,26 @@ export default function Profile() {
   const form = useForm<FoodTruckFormData>({
     resolver: zodResolver(foodTruckSchema),
     defaultValues: {
-      name: foodTruck?.name || "",
-      description: foodTruck?.description || "",
-      cuisine: foodTruck?.cuisine || "",
-      phone: foodTruck?.phone || "",
-      website: foodTruck?.website || "",
+      name: "",
+      description: "",
+      cuisine: "",
+      phone: "",
+      website: "",
     },
   });
+
+  // Reset form when foodTruck data changes
+  React.useEffect(() => {
+    if (foodTruck) {
+      form.reset({
+        name: foodTruck.name || "",
+        description: foodTruck.description || "",
+        cuisine: foodTruck.cuisine || "",
+        phone: foodTruck.phone || "",
+        website: foodTruck.website || "",
+      });
+    }
+  }, [foodTruck, form]);
 
   const createMutation = useMutation({
     mutationFn: async (data: FoodTruckFormData) => {
