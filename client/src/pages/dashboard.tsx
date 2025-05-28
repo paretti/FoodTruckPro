@@ -6,9 +6,11 @@ import RecentOrders from "@/components/recent-orders";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MapPin, Package, AlertTriangle, Plus, Bell } from "lucide-react";
+import { useLocation } from "wouter";
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const [, setLocation] = useLocation();
 
   const { data: foodTruck } = useQuery({
     queryKey: ["/api/food-truck"],
@@ -150,8 +152,15 @@ export default function Dashboard() {
               <CardContent className="space-y-4">
                 {activeLocation ? (
                   <>
-                    <div className="w-full h-32 bg-gray-200 rounded-lg flex items-center justify-center">
-                      <MapPin className="h-8 w-8 text-gray-400" />
+                    <div className="w-full h-32 bg-gray-100 rounded-lg overflow-hidden border">
+                      <iframe
+                        width="100%"
+                        height="128"
+                        style={{ border: 0 }}
+                        src={`https://www.openstreetmap.org/export/embed.html?bbox=${encodeURIComponent(activeLocation.address)}&layer=mapnik&marker=1`}
+                        title="Location Map"
+                        className="rounded-lg"
+                      />
                     </div>
                     <div>
                       <p className="font-medium text-foreground">{activeLocation.name}</p>
@@ -168,7 +177,10 @@ export default function Dashboard() {
                     <p className="text-sm text-muted-foreground">No active location</p>
                   </div>
                 )}
-                <Button className="w-full bg-secondary hover:bg-secondary/90 text-white">
+                <Button 
+                  className="w-full bg-secondary hover:bg-secondary/90 text-white"
+                  onClick={() => setLocation("/locations")}
+                >
                   <MapPin className="h-4 w-4 mr-2" />
                   Change Location
                 </Button>
