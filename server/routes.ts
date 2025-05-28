@@ -21,6 +21,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Mapbox token route
+  app.get('/api/mapbox-token', isAuthenticated, async (req, res) => {
+    try {
+      res.json({ token: process.env.MAPBOX_PUBLIC_KEY });
+    } catch (error) {
+      console.error("Error fetching Mapbox token:", error);
+      res.status(500).json({ message: "Failed to fetch Mapbox token" });
+    }
+  });
+
   // Food truck routes
   app.get('/api/food-truck', isAuthenticated, async (req: any, res) => {
     try {
