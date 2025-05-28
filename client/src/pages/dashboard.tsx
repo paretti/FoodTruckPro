@@ -3,6 +3,7 @@ import { useAuth } from "@/hooks/useAuth";
 import DashboardStats from "@/components/dashboard-stats";
 import SalesChart from "@/components/sales-chart";
 import RecentOrders from "@/components/recent-orders";
+import Map from "@/components/map";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MapPin, Package, AlertTriangle, Plus, Bell } from "lucide-react";
@@ -152,13 +153,8 @@ export default function Dashboard() {
               <CardContent className="space-y-4">
                 {activeLocation ? (
                   <>
-                    <div className="w-full h-32 bg-gray-100 rounded-lg overflow-hidden border relative">
-                      <div className="absolute inset-0 bg-green-50 flex items-center justify-center">
-                        <div className="text-center">
-                          <MapPin className="h-8 w-8 text-primary mx-auto mb-2" />
-                          <p className="text-xs text-primary font-medium">Location Active</p>
-                        </div>
-                      </div>
+                    <div className="w-full h-32 bg-gray-100 rounded-lg overflow-hidden border">
+                      <Map address={activeLocation.address} className="rounded-lg" />
                     </div>
                     <div>
                       <p className="font-medium text-foreground">{activeLocation.name}</p>
