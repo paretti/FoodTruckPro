@@ -39,6 +39,7 @@ export default function Locations() {
 
   const { data: locations = [] } = useQuery({
     queryKey: ["/api/locations", foodTruck?.id],
+    queryFn: () => fetch(`/api/locations/${foodTruck?.id}`).then(res => res.json()),
     enabled: !!foodTruck?.id,
   });
 
@@ -152,7 +153,7 @@ export default function Locations() {
     });
   };
 
-  // Address autocomplete function using OpenStreetMap Nominatim
+  // Address autocomplete function using Photon API (faster and more accurate)
   const searchAddresses = async (query: string) => {
     if (query.length < 3) {
       setAddressSuggestions([]);
@@ -162,15 +163,19 @@ export default function Locations() {
 
     try {
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1`
+        `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5`
       );
       const data = await response.json();
       
-      const suggestions = data.map((item: any) => ({
-        display_name: item.display_name,
-        lat: parseFloat(item.lat),
-        lon: parseFloat(item.lon),
-        address: item.display_name
+      const suggestions = data.features.map((item: any) => ({
+        display_name: item.properties.name 
+          ? `${item.properties.name}, ${item.properties.city || item.properties.state || item.properties.country}`
+          : `${item.properties.street || ''} ${item.properties.housenumber || ''}, ${item.properties.city || item.properties.state || item.properties.country}`.trim(),
+        lat: item.geometry.coordinates[1],
+        lon: item.geometry.coordinates[0],
+        address: item.properties.name 
+          ? `${item.properties.name}, ${item.properties.city || item.properties.state || item.properties.country}`
+          : `${item.properties.street || ''} ${item.properties.housenumber || ''}, ${item.properties.city || item.properties.state || item.properties.country}`.trim()
       }));
       
       setAddressSuggestions(suggestions);
