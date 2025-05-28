@@ -61,7 +61,7 @@ export default function Locations() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/locations"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/locations", foodTruck?.id] });
       setIsDialogOpen(false);
       form.reset();
       toast({
@@ -84,7 +84,7 @@ export default function Locations() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/locations"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/locations", foodTruck?.id] });
       setEditingLocation(null);
       toast({
         title: "Success",
@@ -105,7 +105,7 @@ export default function Locations() {
       await apiRequest("DELETE", `/api/locations/${id}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/locations"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/locations", foodTruck?.id] });
       toast({
         title: "Success",
         description: "Location deleted successfully",

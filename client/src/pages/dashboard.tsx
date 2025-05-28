@@ -89,28 +89,45 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           <SalesChart truckId={foodTruck.id} />
           
-          {/* Popular Items Placeholder */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Popular Items</CardTitle>
-                <Button variant="ghost" size="sm" className="text-primary">
-                  View All
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
+          {/* Popular Items - Only show when there's real data */}
+          {inventory && inventory.length > 0 ? (
+            <Card>
+              <CardHeader>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm">Carnitas Tacos</span>
-                  <span className="text-sm font-medium">35%</span>
+                  <CardTitle>Inventory Items</CardTitle>
+                  <Button variant="ghost" size="sm" className="text-primary">
+                    View All
+                  </Button>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-primary h-2 rounded-full w-[35%]"></div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {inventory.slice(0, 3).map((item: any) => (
+                    <div key={item.id} className="flex items-center justify-between">
+                      <span className="text-sm font-medium">{item.name}</span>
+                      <span className="text-sm text-muted-foreground">
+                        {item.currentStock} {item.unit}
+                      </span>
+                    </div>
+                  ))}
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Inventory Items</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8">
+                  <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-sm text-muted-foreground">
+                    Add inventory items to see them here
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Recent Activity & Location */}
