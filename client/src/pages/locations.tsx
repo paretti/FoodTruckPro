@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, MapPin, Trash2, Edit } from "lucide-react";
+import { Plus, MapPin, Trash2, Edit, Check } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -29,6 +29,9 @@ export default function Locations() {
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingLocation, setEditingLocation] = useState<any>(null);
+  const [addressSuggestions, setAddressSuggestions] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
 
   const { data: foodTruck } = useQuery({
     queryKey: ["/api/food-truck"],
@@ -149,6 +152,60 @@ export default function Locations() {
     });
   };
 
+  // Address autocomplete function using OpenStreetMap Nominatim
+  const searchAddresses = async (query: string) => {
+    if (query.length < 3) {
+      setAddressSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1`
+      );
+      const data = await response.json();
+      
+      const suggestions = data.map((item: any) => ({
+        display_name: item.display_name,
+        lat: parseFloat(item.lat),
+        lon: parseFloat(item.lon),
+        address: item.display_name
+      }));
+      
+      setAddressSuggestions(suggestions);
+      setShowSuggestions(true);
+    } catch (error) {
+      console.error('Address search error:', error);
+      setAddressSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
+
+  // Handle address input change with debouncing
+  const handleAddressChange = (value: string, onChange: (value: string) => void) => {
+    onChange(value);
+    
+    // Clear existing timeout
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+    }
+    
+    // Set new timeout for debounced search
+    const timeout = setTimeout(() => {
+      searchAddresses(value);
+    }, 300);
+    
+    setSearchTimeout(timeout);
+  };
+
+  // Handle suggestion selection
+  const handleSuggestionSelect = (suggestion: any, onChange: (value: string) => void) => {
+    onChange(suggestion.address);
+    setShowSuggestions(false);
+    setAddressSuggestions([]);
+  };
+
   return (
     <div>
       {/* Header */}
@@ -206,7 +263,42 @@ export default function Locations() {
                       <FormItem>
                         <FormLabel>Address</FormLabel>
                         <FormControl>
-                          <Input placeholder="123 Main St, San Francisco, CA" {...field} />
+                          <div className="relative">
+                            <Input 
+                              placeholder="Start typing an address..."
+                              value={field.value}
+                              onChange={(e) => handleAddressChange(e.target.value, field.onChange)}
+                              onFocus={() => {
+                                if (addressSuggestions.length > 0) {
+                                  setShowSuggestions(true);
+                                }
+                              }}
+                              onBlur={() => {
+                                // Delay hiding suggestions to allow clicking
+                                setTimeout(() => setShowSuggestions(false), 200);
+                              }}
+                            />
+                            {showSuggestions && addressSuggestions.length > 0 && (
+                              <div className="absolute z-50 w-full mt-1 bg-white border border-border rounded-md shadow-lg max-h-60 overflow-auto">
+                                {addressSuggestions.map((suggestion, index) => (
+                                  <div
+                                    key={index}
+                                    className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                    onClick={() => handleSuggestionSelect(suggestion, field.onChange)}
+                                  >
+                                    <div className="flex items-start space-x-3">
+                                      <MapPin className="h-4 w-4 text-primary mt-1 flex-shrink-0" />
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium text-foreground truncate">
+                                          {suggestion.display_name}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
