@@ -152,15 +152,13 @@ export default function Dashboard() {
               <CardContent className="space-y-4">
                 {activeLocation ? (
                   <>
-                    <div className="w-full h-32 bg-gray-100 rounded-lg overflow-hidden border">
-                      <iframe
-                        width="100%"
-                        height="128"
-                        style={{ border: 0 }}
-                        src={`https://www.openstreetmap.org/export/embed.html?bbox=${encodeURIComponent(activeLocation.address)}&layer=mapnik&marker=1`}
-                        title="Location Map"
-                        className="rounded-lg"
-                      />
+                    <div className="w-full h-32 bg-gray-100 rounded-lg overflow-hidden border relative">
+                      <div className="absolute inset-0 bg-green-50 flex items-center justify-center">
+                        <div className="text-center">
+                          <MapPin className="h-8 w-8 text-primary mx-auto mb-2" />
+                          <p className="text-xs text-primary font-medium">Location Active</p>
+                        </div>
+                      </div>
                     </div>
                     <div>
                       <p className="font-medium text-foreground">{activeLocation.name}</p>
