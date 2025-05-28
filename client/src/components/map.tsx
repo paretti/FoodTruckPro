@@ -19,7 +19,11 @@ export default function Map({ address, className = '' }: MapProps) {
       const fetchMapboxToken = async () => {
         try {
           const response = await fetch('/api/mapbox-token');
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
           const data = await response.json();
+          console.log('Mapbox token received:', data.token ? 'Token available' : 'No token');
           return data.token;
         } catch (error) {
           console.error('Error fetching Mapbox token:', error);
@@ -28,7 +32,7 @@ export default function Map({ address, className = '' }: MapProps) {
       };
 
       const token = await fetchMapboxToken();
-      if (!token) {
+      if (!token || token.trim() === '') {
         console.error('No Mapbox token available');
         return;
       }

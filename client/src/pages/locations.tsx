@@ -153,7 +153,7 @@ export default function Locations() {
     });
   };
 
-  // Address autocomplete function using Photon API (faster and more accurate)
+  // Address autocomplete using Mapbox (much more accurate!)
   const searchAddresses = async (query: string) => {
     if (query.length < 3) {
       setAddressSuggestions([]);
@@ -162,20 +162,25 @@ export default function Locations() {
     }
 
     try {
+      // Get Mapbox token from backend
+      const tokenResponse = await fetch('/api/mapbox-token');
+      const tokenData = await tokenResponse.json();
+      
+      if (!tokenData.token) {
+        console.error('No Mapbox token available for address search');
+        return;
+      }
+
       const response = await fetch(
-        `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5`
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${tokenData.token}&limit=5&types=address,poi`
       );
       const data = await response.json();
       
       const suggestions = data.features.map((item: any) => ({
-        display_name: item.properties.name 
-          ? `${item.properties.name}, ${item.properties.city || item.properties.state || item.properties.country}`
-          : `${item.properties.street || ''} ${item.properties.housenumber || ''}, ${item.properties.city || item.properties.state || item.properties.country}`.trim(),
-        lat: item.geometry.coordinates[1],
-        lon: item.geometry.coordinates[0],
-        address: item.properties.name 
-          ? `${item.properties.name}, ${item.properties.city || item.properties.state || item.properties.country}`
-          : `${item.properties.street || ''} ${item.properties.housenumber || ''}, ${item.properties.city || item.properties.state || item.properties.country}`.trim()
+        display_name: item.place_name,
+        lat: item.center[1],
+        lon: item.center[0],
+        address: item.place_name
       }));
       
       setAddressSuggestions(suggestions);
