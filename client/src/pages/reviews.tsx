@@ -34,6 +34,7 @@ export default function Reviews() {
 
   const { data: reviews = [] } = useQuery({
     queryKey: ["/api/reviews", foodTruck?.id],
+    queryFn: () => fetch(`/api/reviews/${foodTruck?.id}`).then(res => res.json()),
     enabled: !!foodTruck?.id,
   });
 
@@ -55,7 +56,8 @@ export default function Reviews() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/reviews"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/reviews", foodTruck?.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard-stats"] });
       setIsDialogOpen(false);
       form.reset();
       toast({
