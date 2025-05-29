@@ -19,10 +19,10 @@ import { useToast } from "@/hooks/use-toast";
 const inventorySchema = z.object({
   name: z.string().min(1, "Name is required"),
   category: z.string().optional(),
-  currentStock: z.string().min(1, "Current stock is required"),
+  currentStock: z.string().min(1, "Current stock is required").refine((val) => !isNaN(parseFloat(val)), "Must be a valid number"),
   unit: z.string().min(1, "Unit is required"),
-  lowStockThreshold: z.string().optional(),
-  cost: z.string().optional(),
+  lowStockThreshold: z.string().optional().refine((val) => !val || !isNaN(parseFloat(val)), "Must be a valid number"),
+  cost: z.string().optional().refine((val) => !val || !isNaN(parseFloat(val)), "Must be a valid number"),
 });
 
 type InventoryFormData = z.infer<typeof inventorySchema>;
@@ -59,6 +59,7 @@ export default function Inventory() {
 
   const { data: inventory = [] } = useQuery({
     queryKey: ["/api/inventory", foodTruck?.id],
+    queryFn: () => fetch(`/api/inventory/${foodTruck?.id}`).then(res => res.json()),
     enabled: !!foodTruck?.id,
   });
 
@@ -86,7 +87,7 @@ export default function Inventory() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/inventory"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/inventory", foodTruck?.id] });
       setIsDialogOpen(false);
       form.reset();
       toast({
@@ -114,7 +115,7 @@ export default function Inventory() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/inventory"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/inventory", foodTruck?.id] });
       setEditingItem(null);
       setIsDialogOpen(false);
       toast({
@@ -136,7 +137,7 @@ export default function Inventory() {
       await apiRequest("DELETE", `/api/inventory/${id}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/inventory"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/inventory", foodTruck?.id] });
       toast({
         title: "Success",
         description: "Inventory item deleted successfully",
