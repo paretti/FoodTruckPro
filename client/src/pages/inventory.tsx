@@ -80,9 +80,9 @@ export default function Inventory() {
       const response = await apiRequest("POST", "/api/inventory", {
         ...data,
         truckId: foodTruck?.id,
-        currentStock: parseFloat(data.currentStock),
-        lowStockThreshold: data.lowStockThreshold ? parseFloat(data.lowStockThreshold) : null,
-        cost: data.cost ? parseFloat(data.cost) : null,
+        currentStock: data.currentStock,
+        lowStockThreshold: data.lowStockThreshold || null,
+        cost: data.cost || null,
       });
       return response.json();
     },
@@ -108,9 +108,9 @@ export default function Inventory() {
     mutationFn: async ({ id, data }: { id: number; data: Partial<InventoryFormData> }) => {
       const response = await apiRequest("PUT", `/api/inventory/${id}`, {
         ...data,
-        currentStock: data.currentStock ? parseFloat(data.currentStock) : undefined,
-        lowStockThreshold: data.lowStockThreshold ? parseFloat(data.lowStockThreshold) : null,
-        cost: data.cost ? parseFloat(data.cost) : null,
+        currentStock: data.currentStock || undefined,
+        lowStockThreshold: data.lowStockThreshold || null,
+        cost: data.cost || null,
       });
       return response.json();
     },
