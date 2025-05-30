@@ -53,9 +53,15 @@ export const organizations = pgTable("organizations", {
 export const teamMembers = pgTable("team_members", {
   id: serial("id").primaryKey(),
   organizationId: integer("organization_id").notNull(),
-  userId: varchar("user_id").notNull(),
+  userId: varchar("user_id").notNull(), // Can be employee ID or custom identifier
+  firstName: varchar("first_name").notNull(),
+  lastName: varchar("last_name").notNull(),
+  email: varchar("email"),
+  phone: varchar("phone"),
   truckId: integer("truck_id"), // nullable - admins may not be assigned to specific trucks
   role: varchar("role").notNull().default("member"), // admin, manager, member
+  startDate: timestamp("start_date").defaultNow(),
+  isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -234,6 +240,12 @@ export const insertOrganizationSchema = createInsertSchema(organizations).omit({
 export const insertTeamMemberSchema = createInsertSchema(teamMembers).omit({
   id: true,
   createdAt: true,
+  startDate: true,
+}).extend({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  email: z.string().email("Invalid email address").optional(),
+  phone: z.string().optional(),
 });
 
 export const insertProteinInventorySchema = createInsertSchema(proteinInventory).omit({

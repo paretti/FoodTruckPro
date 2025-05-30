@@ -19,7 +19,11 @@ const organizationSchema = z.object({
 });
 
 const teamMemberSchema = z.object({
-  userId: z.string().min(1, "User ID is required"),
+  userId: z.string().min(1, "Employee ID is required"),
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  email: z.string().email("Invalid email address").optional().or(z.literal("")),
+  phone: z.string().optional(),
   truckId: z.number().optional(),
   role: z.enum(["admin", "manager", "member"]),
 });
@@ -64,7 +68,14 @@ export default function Team() {
 
   const memberForm = useForm<TeamMemberFormData>({
     resolver: zodResolver(teamMemberSchema),
-    defaultValues: { userId: "", role: "member" },
+    defaultValues: { 
+      userId: "", 
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      role: "member" 
+    },
   });
 
   const truckForm = useForm<TruckFormData>({
@@ -281,9 +292,63 @@ export default function Team() {
                           name="userId"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>User ID</FormLabel>
+                              <FormLabel>Employee ID</FormLabel>
                               <FormControl>
-                                <Input placeholder="Enter user ID" {...field} />
+                                <Input placeholder="EMP001" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <div className="grid grid-cols-2 gap-4">
+                          <FormField
+                            control={memberForm.control}
+                            name="firstName"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>First Name</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="John" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={memberForm.control}
+                            name="lastName"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Last Name</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Doe" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        <FormField
+                          control={memberForm.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Email (Optional)</FormLabel>
+                              <FormControl>
+                                <Input type="email" placeholder="john.doe@example.com" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={memberForm.control}
+                          name="phone"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Phone (Optional)</FormLabel>
+                              <FormControl>
+                                <Input placeholder="(555) 123-4567" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
