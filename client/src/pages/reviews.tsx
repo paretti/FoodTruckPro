@@ -15,6 +15,12 @@ import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { 
+  ReviewSubmissionAnimation, 
+  StarRatingAnimation, 
+  FloatingSuccessMessage,
+  TypingIndicator 
+} from "@/components/loading-animations";
 
 const reviewSchema = z.object({
   customerName: z.string().min(1, "Customer name is required"),
@@ -27,6 +33,10 @@ type ReviewFormData = z.infer<typeof reviewSchema>;
 export default function Reviews() {
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [showSubmissionAnimation, setShowSubmissionAnimation] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [selectedRating, setSelectedRating] = useState(0);
+  const [showRatingAnimation, setShowRatingAnimation] = useState(false);
 
   const { data: foodTruck } = useQuery({
     queryKey: ["/api/food-truck"],
@@ -49,6 +59,9 @@ export default function Reviews() {
 
   const createMutation = useMutation({
     mutationFn: async (data: ReviewFormData) => {
+      // Show the playful submission animation
+      setShowSubmissionAnimation(true);
+      
       const response = await apiRequest("POST", "/api/reviews", {
         ...data,
         truckId: foodTruck?.id,
@@ -58,12 +71,18 @@ export default function Reviews() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/reviews", foodTruck?.id] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard-stats"] });
-      setIsDialogOpen(false);
-      form.reset();
-      toast({
-        title: "Success",
-        description: "Review added successfully",
-      });
+      
+      // Hide submission animation and show success message
+      setTimeout(() => {
+        setShowSubmissionAnimation(false);
+        setIsDialogOpen(false);
+        form.reset();
+        setSelectedRating(0);
+        setShowSuccessMessage(true);
+        
+        // Hide success message after 3 seconds
+        setTimeout(() => setShowSuccessMessage(false), 3000);
+      }, 100);
     },
     onError: () => {
       toast({

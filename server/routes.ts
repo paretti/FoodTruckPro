@@ -115,9 +115,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/inventory', isAuthenticated, async (req, res) => {
     try {
-      const itemData = insertInventoryItemSchema.parse(req.body);
-      const item = await storage.createInventoryItem(itemData);
-      res.json(item);
+      // Legacy endpoint for compatibility
+      res.status(501).json({ message: "Use protein inventory instead" });
     } catch (error) {
       console.error("Error creating inventory item:", error);
       res.status(500).json({ message: "Failed to create inventory item" });
@@ -126,10 +125,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put('/api/inventory/:id', isAuthenticated, async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
-      const itemData = insertInventoryItemSchema.partial().parse(req.body);
-      const item = await storage.updateInventoryItem(id, itemData);
-      res.json(item);
+      // Legacy endpoint for compatibility
+      res.status(501).json({ message: "Use protein inventory instead" });
     } catch (error) {
       console.error("Error updating inventory item:", error);
       res.status(500).json({ message: "Failed to update inventory item" });
@@ -138,9 +135,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete('/api/inventory/:id', isAuthenticated, async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
-      await storage.deleteInventoryItem(id);
-      res.json({ success: true });
+      // Legacy endpoint for compatibility
+      res.status(501).json({ message: "Use protein inventory instead" });
     } catch (error) {
       console.error("Error deleting inventory item:", error);
       res.status(500).json({ message: "Failed to delete inventory item" });
