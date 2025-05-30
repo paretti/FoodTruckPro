@@ -1,18 +1,27 @@
 import {
   users,
+  organizations,
+  teamMembers,
   foodTrucks,
   locations,
-  inventoryItems,
+  proteinInventory,
+  menuItems,
   orders,
   reviews,
   type User,
   type UpsertUser,
+  type Organization,
+  type InsertOrganization,
+  type TeamMember,
+  type InsertTeamMember,
   type FoodTruck,
   type InsertFoodTruck,
   type Location,
   type InsertLocation,
-  type InventoryItem,
-  type InsertInventoryItem,
+  type ProteinInventory,
+  type InsertProteinInventory,
+  type MenuItem,
+  type InsertMenuItem,
   type Order,
   type InsertOrder,
   type Review,
@@ -26,7 +35,17 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   
+  // Organization operations
+  getOrganizationByOwnerId(ownerId: string): Promise<Organization | undefined>;
+  createOrganization(org: InsertOrganization): Promise<Organization>;
+  
+  // Team operations
+  getTeamMembersByOrganizationId(organizationId: number): Promise<TeamMember[]>;
+  getTeamMemberByUserId(userId: string): Promise<TeamMember | undefined>;
+  addTeamMember(member: InsertTeamMember): Promise<TeamMember>;
+  
   // Food truck operations
+  getFoodTrucksByOrganizationId(organizationId: number): Promise<FoodTruck[]>;
   getFoodTruckByUserId(userId: string): Promise<FoodTruck | undefined>;
   createFoodTruck(truck: InsertFoodTruck): Promise<FoodTruck>;
   updateFoodTruck(id: number, truck: Partial<InsertFoodTruck>): Promise<FoodTruck>;
@@ -37,11 +56,15 @@ export interface IStorage {
   updateLocation(id: number, location: Partial<InsertLocation>): Promise<Location>;
   deleteLocation(id: number): Promise<void>;
   
-  // Inventory operations
-  getInventoryByTruckId(truckId: number): Promise<InventoryItem[]>;
-  createInventoryItem(item: InsertInventoryItem): Promise<InventoryItem>;
-  updateInventoryItem(id: number, item: Partial<InsertInventoryItem>): Promise<InventoryItem>;
-  deleteInventoryItem(id: number): Promise<void>;
+  // Protein inventory operations
+  getProteinInventoryByTruckId(truckId: number): Promise<ProteinInventory[]>;
+  createProteinInventory(item: InsertProteinInventory): Promise<ProteinInventory>;
+  updateProteinInventory(id: number, item: Partial<InsertProteinInventory>): Promise<ProteinInventory>;
+  deleteProteinInventory(id: number): Promise<void>;
+  
+  // Menu operations
+  getMenuItems(): Promise<MenuItem[]>;
+  createMenuItem(item: InsertMenuItem): Promise<MenuItem>;
   
   // Order operations
   getOrdersByTruckId(truckId: number, limit?: number): Promise<Order[]>;
@@ -84,11 +107,66 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Food truck operations
+  // Organization operations
+  async getOrganizationByOwnerId(ownerId: string): Promise<Organization | undefined> {
+    const [org] = await db
+      .select()
+      .from(organizations)
+      .where(eq(organizations.ownerId, ownerId));
+    return org;
+  }
+
+  async createOrganization(orgData: InsertOrganization): Promise<Organization> {
+    const [org] = await db
+      .insert(organizations)
+      .values(orgData)
+      .returning();
+    return org;
+  }
+
+  // Team operations
+  async getTeamMembersByOrganizationId(organizationId: number): Promise<TeamMember[]> {
+    return await db
+      .select()
+      .from(teamMembers)
+      .where(eq(teamMembers.organizationId, organizationId));
+  }
+
+  async getTeamMemberByUserId(userId: string): Promise<TeamMember | undefined> {
+    const [member] = await db
+      .select()
+      .from(teamMembers)
+      .where(eq(teamMembers.userId, userId));
+    return member;
+  }
+
+  async addTeamMember(memberData: InsertTeamMember): Promise<TeamMember> {
+    const [member] = await db
+      .insert(teamMembers)
+      .values(memberData)
+      .returning();
+    return member;
+  }
+
+  // Food truck operations
+  async getFoodTrucksByOrganizationId(organizationId: number): Promise<FoodTruck[]> {
+    return await db
+      .select()
+      .from(foodTrucks)
+      .where(eq(foodTrucks.organizationId, organizationId));
+  }
+
   async getFoodTruckByUserId(userId: string): Promise<FoodTruck | undefined> {
+    // Get user's team membership first
+    const teamMember = await this.getTeamMemberByUserId(userId);
+    if (!teamMember?.truckId) {
+      return undefined;
+    }
+
     const [truck] = await db
       .select()
       .from(foodTrucks)
-      .where(eq(foodTrucks.userId, userId));
+      .where(eq(foodTrucks.id, teamMember.truckId));
     return truck;
   }
 
