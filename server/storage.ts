@@ -43,6 +43,8 @@ export interface IStorage {
   getTeamMembersByOrganizationId(organizationId: number): Promise<TeamMember[]>;
   getTeamMemberByUserId(userId: string): Promise<TeamMember | undefined>;
   addTeamMember(member: InsertTeamMember): Promise<TeamMember>;
+  updateTeamMember(id: number, member: Partial<InsertTeamMember>): Promise<TeamMember>;
+  deleteTeamMember(id: number): Promise<void>;
   
   // Food truck operations
   getFoodTrucksByOrganizationId(organizationId: number): Promise<FoodTruck[]>;
@@ -146,6 +148,21 @@ export class DatabaseStorage implements IStorage {
       .values(memberData)
       .returning();
     return member;
+  }
+
+  async updateTeamMember(id: number, memberData: Partial<InsertTeamMember>): Promise<TeamMember> {
+    const [member] = await db
+      .update(teamMembers)
+      .set(memberData)
+      .where(eq(teamMembers.id, id))
+      .returning();
+    return member;
+  }
+
+  async deleteTeamMember(id: number): Promise<void> {
+    await db
+      .delete(teamMembers)
+      .where(eq(teamMembers.id, id));
   }
 
   // Food truck operations

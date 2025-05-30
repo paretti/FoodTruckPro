@@ -87,12 +87,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/team-members', isAuthenticated, async (req, res) => {
     try {
-      const memberData = insertTeamMemberSchema.parse(req.body);
+      // Transform empty strings to null for optional fields
+      const processedData = {
+        ...req.body,
+        email: req.body.email === "" ? null : req.body.email,
+        phone: req.body.phone === "" ? null : req.body.phone,
+      };
+      
+      const memberData = insertTeamMemberSchema.parse(processedData);
       const member = await storage.addTeamMember(memberData);
       res.json(member);
     } catch (error) {
       console.error("Error adding team member:", error);
       res.status(500).json({ message: "Failed to add team member" });
+    }
+  });
+
+  app.put('/api/team-members/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const processedData = {
+        ...req.body,
+        email: req.body.email === "" ? null : req.body.email,
+        phone: req.body.phone === "" ? null : req.body.phone,
+      };
+      
+      const memberData = insertTeamMemberSchema.partial().parse(processedData);
+      const member = await storage.updateTeamMember(id, memberData);
+      res.json(member);
+    } catch (error) {
+      console.error("Error updating team member:", error);
+      res.status(500).json({ message: "Failed to update team member" });
+    }
+  });
+
+  app.delete('/api/team-members/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteTeamMember(id);
+      res.json({ message: "Team member deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting team member:", error);
+      res.status(500).json({ message: "Failed to delete team member" });
     }
   });
 

@@ -244,7 +244,7 @@ export const insertTeamMemberSchema = createInsertSchema(teamMembers).omit({
 }).extend({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
-  email: z.string().email("Invalid email address").optional(),
+  email: z.string().email("Invalid email address").optional().or(z.literal("")),
   phone: z.string().optional(),
 });
 
