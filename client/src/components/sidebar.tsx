@@ -10,13 +10,16 @@ import {
   User, 
   Settings, 
   Truck,
+  Users,
+  Beef,
   LogOut
 } from "lucide-react";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: BarChart3 },
   { name: "Locations", href: "/locations", icon: MapPin },
-  { name: "Inventory", href: "/inventory", icon: Package },
+  { name: "Team", href: "/team", icon: Users },
+  { name: "Protein Inventory", href: "/protein-inventory", icon: Beef },
   { name: "Reviews", href: "/reviews", icon: Star },
   { name: "Profile", href: "/profile", icon: User },
 ];

@@ -8,7 +8,8 @@ import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
 import Dashboard from "@/pages/dashboard";
 import Locations from "@/pages/locations";
-import Inventory from "@/pages/inventory";
+import Team from "@/pages/team";
+import ProteinInventory from "@/pages/protein-inventory";
 import Reviews from "@/pages/reviews";
 import Profile from "@/pages/profile";
 import Sidebar from "@/components/sidebar";
@@ -43,7 +44,8 @@ function Router() {
         <Switch>
           <Route path="/" component={Dashboard} />
           <Route path="/locations" component={Locations} />
-          <Route path="/inventory" component={Inventory} />
+          <Route path="/team" component={Team} />
+          <Route path="/protein-inventory" component={ProteinInventory} />
           <Route path="/reviews" component={Reviews} />
           <Route path="/profile" component={Profile} />
           <Route component={NotFound} />
