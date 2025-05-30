@@ -31,6 +31,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Organization routes
+  app.get('/api/organization', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const organization = await storage.getOrganizationByOwnerId(userId);
+      res.json(organization);
+    } catch (error) {
+      console.error("Error fetching organization:", error);
+      res.status(500).json({ message: "Failed to fetch organization" });
+    }
+  });
+
+  app.post('/api/organization', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const orgData = insertOrganizationSchema.parse({ 
+        ...req.body, 
+        ownerId: userId 
+      });
+      const organization = await storage.createOrganization(orgData);
+      res.json(organization);
+    } catch (error) {
+      console.error("Error creating organization:", error);
+      res.status(500).json({ message: "Failed to create organization" });
+    }
+  });
+
+  // Team member routes
+  app.get('/api/team-members/:organizationId', isAuthenticated, async (req, res) => {
+    try {
+      const organizationId = parseInt(req.params.organizationId);
+      const members = await storage.getTeamMembersByOrganizationId(organizationId);
+      res.json(members);
+    } catch (error) {
+      console.error("Error fetching team members:", error);
+      res.status(500).json({ message: "Failed to fetch team members" });
+    }
+  });
+
+  app.post('/api/team-members', isAuthenticated, async (req, res) => {
+    try {
+      const memberData = insertTeamMemberSchema.parse(req.body);
+      const member = await storage.addTeamMember(memberData);
+      res.json(member);
+    } catch (error) {
+      console.error("Error adding team member:", error);
+      res.status(500).json({ message: "Failed to add team member" });
+    }
+  });
+
   // Food truck routes
   app.get('/api/food-truck', isAuthenticated, async (req: any, res) => {
     try {
