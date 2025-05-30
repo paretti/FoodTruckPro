@@ -205,6 +205,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Protein inventory routes
+  app.get('/api/protein-inventory/:truckId', isAuthenticated, async (req, res) => {
+    try {
+      const truckId = parseInt(req.params.truckId);
+      const inventory = await storage.getProteinInventoryByTruckId(truckId);
+      res.json(inventory);
+    } catch (error) {
+      console.error("Error fetching protein inventory:", error);
+      res.status(500).json({ message: "Failed to fetch protein inventory" });
+    }
+  });
+
+  app.get('/api/protein-inventory', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const truck = await storage.getFoodTruckByUserId(userId);
+      if (!truck) {
+        return res.json([]);
+      }
+      const inventory = await storage.getProteinInventoryByTruckId(truck.id);
+      res.json(inventory);
+    } catch (error) {
+      console.error("Error fetching protein inventory:", error);
+      res.status(500).json({ message: "Failed to fetch protein inventory" });
+    }
+  });
+
+  app.post('/api/protein-inventory', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const truck = await storage.getFoodTruckByUserId(userId);
+      if (!truck) {
+        return res.status(400).json({ message: "No truck found for user" });
+      }
+      
+      const inventoryData = insertProteinInventorySchema.parse({
+        ...req.body,
+        truckId: truck.id,
+      });
+      const inventory = await storage.createProteinInventory(inventoryData);
+      res.json(inventory);
+    } catch (error) {
+      console.error("Error creating protein inventory:", error);
+      res.status(500).json({ message: "Failed to create protein inventory" });
+    }
+  });
+
+  app.put('/api/protein-inventory/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const inventoryData = insertProteinInventorySchema.partial().parse(req.body);
+      const inventory = await storage.updateProteinInventory(id, inventoryData);
+      res.json(inventory);
+    } catch (error) {
+      console.error("Error updating protein inventory:", error);
+      res.status(500).json({ message: "Failed to update protein inventory" });
+    }
+  });
+
+  app.delete('/api/protein-inventory/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteProteinInventory(id);
+      res.json({ message: "Protein inventory deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting protein inventory:", error);
+      res.status(500).json({ message: "Failed to delete protein inventory" });
+    }
+  });
+
+  // Menu item routes
+  app.get('/api/menu-items', async (req, res) => {
+    try {
+      const menuItems = await storage.getMenuItems();
+      res.json(menuItems);
+    } catch (error) {
+      console.error("Error fetching menu items:", error);
+      res.status(500).json({ message: "Failed to fetch menu items" });
+    }
+  });
+
+  app.post('/api/menu-items', isAuthenticated, async (req, res) => {
+    try {
+      const menuData = insertMenuItemSchema.parse(req.body);
+      const menuItem = await storage.createMenuItem(menuData);
+      res.json(menuItem);
+    } catch (error) {
+      console.error("Error creating menu item:", error);
+      res.status(500).json({ message: "Failed to create menu item" });
+    }
+  });
+
   // Order routes
   app.get('/api/orders/:truckId', isAuthenticated, async (req, res) => {
     try {

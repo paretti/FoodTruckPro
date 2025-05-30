@@ -225,34 +225,50 @@ export class DatabaseStorage implements IStorage {
     await db.delete(locations).where(eq(locations.id, id));
   }
 
-  // Inventory operations
-  async getInventoryByTruckId(truckId: number): Promise<InventoryItem[]> {
+  // Protein inventory operations
+  async getProteinInventoryByTruckId(truckId: number): Promise<ProteinInventory[]> {
     return await db
       .select()
-      .from(inventoryItems)
-      .where(eq(inventoryItems.truckId, truckId))
-      .orderBy(inventoryItems.name);
+      .from(proteinInventory)
+      .where(eq(proteinInventory.truckId, truckId));
   }
 
-  async createInventoryItem(item: InsertInventoryItem): Promise<InventoryItem> {
+  async createProteinInventory(item: InsertProteinInventory): Promise<ProteinInventory> {
     const [newItem] = await db
-      .insert(inventoryItems)
+      .insert(proteinInventory)
       .values(item)
       .returning();
     return newItem;
   }
 
-  async updateInventoryItem(id: number, item: Partial<InsertInventoryItem>): Promise<InventoryItem> {
+  async updateProteinInventory(id: number, item: Partial<InsertProteinInventory>): Promise<ProteinInventory> {
     const [updatedItem] = await db
-      .update(inventoryItems)
+      .update(proteinInventory)
       .set({ ...item, updatedAt: new Date() })
-      .where(eq(inventoryItems.id, id))
+      .where(eq(proteinInventory.id, id))
       .returning();
     return updatedItem;
   }
 
-  async deleteInventoryItem(id: number): Promise<void> {
-    await db.delete(inventoryItems).where(eq(inventoryItems.id, id));
+  async deleteProteinInventory(id: number): Promise<void> {
+    await db
+      .delete(proteinInventory)
+      .where(eq(proteinInventory.id, id));
+  }
+
+  // Menu operations
+  async getMenuItems(): Promise<MenuItem[]> {
+    return await db
+      .select()
+      .from(menuItems);
+  }
+
+  async createMenuItem(item: InsertMenuItem): Promise<MenuItem> {
+    const [newItem] = await db
+      .insert(menuItems)
+      .values(item)
+      .returning();
+    return newItem;
   }
 
   // Order operations
