@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Users, Truck, UserPlus } from "lucide-react";
+import { Plus, Users, Truck, UserPlus, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -45,6 +45,7 @@ export default function Team() {
   const [isOrgDialogOpen, setIsOrgDialogOpen] = useState(false);
   const [isMemberDialogOpen, setIsMemberDialogOpen] = useState(false);
   const [isTruckDialogOpen, setIsTruckDialogOpen] = useState(false);
+  const [editingMember, setEditingMember] = useState<any>(null);
 
   // Get user's organization and team data
   const { data: organization } = useQuery({
@@ -108,12 +109,43 @@ export default function Team() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/team-members", organization?.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/team-members"] });
       setIsMemberDialogOpen(false);
       memberForm.reset();
       toast({
         title: "Success",
         description: "Team member added successfully",
+      });
+    },
+  });
+
+  const updateMemberMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: TeamMemberFormData }) => {
+      const response = await apiRequest("PUT", `/api/team-members/${id}`, data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/team-members"] });
+      setEditingMember(null);
+      setIsMemberDialogOpen(false);
+      memberForm.reset();
+      toast({
+        title: "Success",
+        description: "Team member updated successfully",
+      });
+    },
+  });
+
+  const deleteMemberMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await apiRequest("DELETE", `/api/team-members/${id}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/team-members"] });
+      toast({
+        title: "Success",
+        description: "Team member deleted successfully",
       });
     },
   });
@@ -274,7 +306,13 @@ export default function Team() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Team Members</CardTitle>
-                <Dialog open={isMemberDialogOpen} onOpenChange={setIsMemberDialogOpen}>
+                <Dialog open={isMemberDialogOpen} onOpenChange={(open) => {
+                  setIsMemberDialogOpen(open);
+                  if (!open) {
+                    setEditingMember(null);
+                    memberForm.reset();
+                  }
+                }}>
                   <DialogTrigger asChild>
                     <Button size="sm" className="bg-primary hover:bg-primary/90">
                       <UserPlus className="h-4 w-4 mr-2" />
@@ -283,10 +321,16 @@ export default function Team() {
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Add Team Member</DialogTitle>
+                      <DialogTitle>{editingMember ? "Edit Team Member" : "Add Team Member"}</DialogTitle>
                     </DialogHeader>
                     <Form {...memberForm}>
-                      <form onSubmit={memberForm.handleSubmit((data) => addMemberMutation.mutate(data))} className="space-y-4">
+                      <form onSubmit={memberForm.handleSubmit((data) => {
+                        if (editingMember) {
+                          updateMemberMutation.mutate({ id: editingMember.id, data });
+                        } else {
+                          addMemberMutation.mutate(data);
+                        }
+                      })} className="space-y-4">
                         <FormField
                           control={memberForm.control}
                           name="userId"
@@ -434,16 +478,62 @@ export default function Team() {
               ) : (
                 <div className="space-y-4">
                   {teamMembers.map((member: any) => (
-                    <div key={member.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <p className="font-medium text-foreground">User {member.userId}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {member.truckId ? `Assigned to Truck ${member.truckId}` : "No truck assigned"}
-                        </p>
+                    <div key={member.id} className="p-4 border rounded-lg">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="font-medium text-foreground">
+                              {member.firstName} {member.lastName}
+                            </h3>
+                            <Badge variant={member.role === "admin" ? "default" : "secondary"}>
+                              {member.role}
+                            </Badge>
+                          </div>
+                          <div className="space-y-1 text-sm text-muted-foreground">
+                            <p>Employee ID: {member.userId}</p>
+                            {member.email && <p>Email: {member.email}</p>}
+                            {member.phone && <p>Phone: {member.phone}</p>}
+                            <p>
+                              {member.truckId 
+                                ? `Assigned to Truck ${member.truckId}` 
+                                : "No truck assigned"
+                              }
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setEditingMember(member);
+                              memberForm.reset({
+                                userId: member.userId,
+                                firstName: member.firstName,
+                                lastName: member.lastName,
+                                email: member.email || "",
+                                phone: member.phone || "",
+                                role: member.role,
+                                truckId: member.truckId,
+                              });
+                              setIsMemberDialogOpen(true);
+                            }}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => {
+                              if (window.confirm("Are you sure you want to delete this team member?")) {
+                                deleteMemberMutation.mutate(member.id);
+                              }
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
-                      <Badge variant={member.role === "admin" ? "default" : "secondary"}>
-                        {member.role}
-                      </Badge>
                     </div>
                   ))}
                 </div>
