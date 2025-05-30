@@ -46,7 +46,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/food-truck', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const truckData = insertFoodTruckSchema.parse({ ...req.body, userId });
+      
+      // First, get or create user's organization
+      let organization = await storage.getOrganizationByOwnerId(userId);
+      if (!organization) {
+        organization = await storage.createOrganization({
+          name: `${req.body.name || 'My'} Organization`,
+          ownerId: userId,
+        });
+      }
+      
+      const truckData = insertFoodTruckSchema.parse({ 
+        ...req.body, 
+        organizationId: organization.id 
+      });
       const truck = await storage.createFoodTruck(truckData);
       res.json(truck);
     } catch (error) {

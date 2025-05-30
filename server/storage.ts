@@ -157,17 +157,25 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getFoodTruckByUserId(userId: string): Promise<FoodTruck | undefined> {
-    // Get user's team membership first
-    const teamMember = await this.getTeamMemberByUserId(userId);
-    if (!teamMember?.truckId) {
-      return undefined;
+    // First try to find user's organization
+    const organization = await this.getOrganizationByOwnerId(userId);
+    if (organization) {
+      // If user owns an organization, get the first truck
+      const trucks = await this.getFoodTrucksByOrganizationId(organization.id);
+      return trucks[0];
     }
 
-    const [truck] = await db
-      .select()
-      .from(foodTrucks)
-      .where(eq(foodTrucks.id, teamMember.truckId));
-    return truck;
+    // Otherwise, check if user is a team member assigned to a truck
+    const teamMember = await this.getTeamMemberByUserId(userId);
+    if (teamMember?.truckId) {
+      const [truck] = await db
+        .select()
+        .from(foodTrucks)
+        .where(eq(foodTrucks.id, teamMember.truckId));
+      return truck;
+    }
+
+    return undefined;
   }
 
   async createFoodTruck(truck: InsertFoodTruck): Promise<FoodTruck> {
