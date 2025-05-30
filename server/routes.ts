@@ -70,6 +70,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get('/api/team-members', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const organization = await storage.getOrganizationByOwnerId(userId);
+      if (!organization) {
+        return res.json([]);
+      }
+      const members = await storage.getTeamMembersByOrganizationId(organization.id);
+      res.json(members);
+    } catch (error) {
+      console.error("Error fetching team members:", error);
+      res.status(500).json({ message: "Failed to fetch team members" });
+    }
+  });
+
   app.post('/api/team-members', isAuthenticated, async (req, res) => {
     try {
       const memberData = insertTeamMemberSchema.parse(req.body);
@@ -78,6 +93,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error adding team member:", error);
       res.status(500).json({ message: "Failed to add team member" });
+    }
+  });
+
+  // Truck management routes
+  app.get('/api/trucks', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const organization = await storage.getOrganizationByOwnerId(userId);
+      if (!organization) {
+        return res.json([]);
+      }
+      const trucks = await storage.getFoodTrucksByOrganizationId(organization.id);
+      res.json(trucks);
+    } catch (error) {
+      console.error("Error fetching trucks:", error);
+      res.status(500).json({ message: "Failed to fetch trucks" });
+    }
+  });
+
+  app.post('/api/trucks', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const organization = await storage.getOrganizationByOwnerId(userId);
+      if (!organization) {
+        return res.status(400).json({ message: "No organization found" });
+      }
+      
+      const truckData = insertFoodTruckSchema.parse({
+        ...req.body,
+        organizationId: organization.id,
+      });
+      const truck = await storage.createFoodTruck(truckData);
+      res.json(truck);
+    } catch (error) {
+      console.error("Error creating truck:", error);
+      res.status(500).json({ message: "Failed to create truck" });
     }
   });
 
