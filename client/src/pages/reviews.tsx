@@ -168,23 +168,39 @@ export default function Reviews() {
                       <FormItem>
                         <FormLabel>Rating</FormLabel>
                         <FormControl>
-                          <div className="flex space-x-2">
-                            {[1, 2, 3, 4, 5].map((rating) => (
-                              <button
-                                key={rating}
-                                type="button"
-                                onClick={() => field.onChange(rating)}
-                                className="focus:outline-none"
-                              >
-                                <Star
-                                  className={`h-8 w-8 ${
-                                    rating <= field.value
-                                      ? "text-yellow-400 fill-current"
-                                      : "text-gray-300"
-                                  }`}
-                                />
-                              </button>
-                            ))}
+                          <div className="space-y-3">
+                            <div className="flex space-x-2">
+                              {[1, 2, 3, 4, 5].map((rating) => (
+                                <button
+                                  key={rating}
+                                  type="button"
+                                  onClick={() => {
+                                    field.onChange(rating);
+                                    setSelectedRating(rating);
+                                    setShowRatingAnimation(true);
+                                    setTimeout(() => setShowRatingAnimation(false), 800);
+                                  }}
+                                  className="focus:outline-none transition-transform hover:scale-110 group"
+                                >
+                                  <Star
+                                    className={`h-8 w-8 transition-all duration-200 ${
+                                      rating <= field.value
+                                        ? "text-yellow-400 fill-current"
+                                        : "text-gray-300 group-hover:text-yellow-200 group-hover:scale-105"
+                                    }`}
+                                  />
+                                </button>
+                              ))}
+                            </div>
+                            {field.value > 0 && (
+                              <p className="text-sm text-muted-foreground">
+                                {field.value === 5 && "Excellent! 🌟"}
+                                {field.value === 4 && "Great! 😊"}
+                                {field.value === 3 && "Good 👍"}
+                                {field.value === 2 && "Okay 👌"}
+                                {field.value === 1 && "Poor 😞"}
+                              </p>
+                            )}
                           </div>
                         </FormControl>
                         <FormMessage />
@@ -217,10 +233,16 @@ export default function Reviews() {
                     </Button>
                     <Button
                       type="submit"
-                      className="bg-primary hover:bg-primary/90"
-                      disabled={createMutation.isPending}
+                      className="bg-primary hover:bg-primary/90 relative"
+                      disabled={createMutation.isPending || showSubmissionAnimation}
                     >
-                      Add Review
+                      {createMutation.isPending ? (
+                        <div className="flex items-center space-x-2">
+                          <TypingIndicator isVisible={true} />
+                        </div>
+                      ) : (
+                        "Add Review"
+                      )}
                     </Button>
                   </div>
                 </form>
@@ -359,6 +381,25 @@ export default function Reviews() {
           </div>
         </div>
       </main>
+
+      {/* Playful Loading Animations */}
+      <ReviewSubmissionAnimation 
+        isLoading={showSubmissionAnimation}
+        onComplete={() => {
+          setShowSubmissionAnimation(false);
+          setIsDialogOpen(false);
+          form.reset();
+          setSelectedRating(0);
+          setShowSuccessMessage(true);
+          setTimeout(() => setShowSuccessMessage(false), 3000);
+        }}
+      />
+
+      <FloatingSuccessMessage
+        message="Review submitted successfully! Thank you for your feedback!"
+        isVisible={showSuccessMessage}
+        onAnimationComplete={() => setShowSuccessMessage(false)}
+      />
     </div>
   );
 }

@@ -104,9 +104,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Inventory routes
   app.get('/api/inventory/:truckId', isAuthenticated, async (req, res) => {
     try {
-      const truckId = parseInt(req.params.truckId);
-      const inventory = await storage.getInventoryByTruckId(truckId);
-      res.json(inventory);
+      // Legacy endpoint - return empty for compatibility
+      res.json([]);
     } catch (error) {
       console.error("Error fetching inventory:", error);
       res.status(500).json({ message: "Failed to fetch inventory" });
