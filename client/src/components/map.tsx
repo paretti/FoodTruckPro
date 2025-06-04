@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { getApiUrl } from '@/lib/config';
 
 interface MapProps {
   address: string;
@@ -18,7 +19,7 @@ export default function Map({ address, className = '' }: MapProps) {
       // Fetch the token from backend
       const fetchMapboxToken = async () => {
         try {
-          const response = await fetch('/api/mapbox-token');
+          const response = await fetch(getApiUrl('/api/mapbox-token'));
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
           }

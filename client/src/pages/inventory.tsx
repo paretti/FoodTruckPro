@@ -15,6 +15,7 @@ import { Plus, Package, AlertTriangle, Edit, Trash2 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { getApiUrl } from "@/lib/config";
 
 const inventorySchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -59,7 +60,7 @@ export default function Inventory() {
 
   const { data: inventory = [] } = useQuery({
     queryKey: ["/api/inventory", foodTruck?.id],
-    queryFn: () => fetch(`/api/inventory/${foodTruck?.id}`).then(res => res.json()),
+    queryFn: () => fetch(getApiUrl(`/api/inventory/${foodTruck?.id}`)).then(res => res.json()),
     enabled: !!foodTruck?.id,
   });
 

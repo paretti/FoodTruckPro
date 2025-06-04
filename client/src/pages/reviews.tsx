@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Star, MessageSquare, TrendingUp } from "lucide-react";
+import { Plus, Star, MessageSquare, TrendingUp, Sparkles, Award, Target } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -21,6 +21,7 @@ import {
   FloatingSuccessMessage,
   TypingIndicator 
 } from "@/components/loading-animations";
+import { getApiUrl } from "@/lib/config";
 
 const reviewSchema = z.object({
   customerName: z.string().min(1, "Customer name is required"),
@@ -44,7 +45,7 @@ export default function Reviews() {
 
   const { data: reviews = [] } = useQuery({
     queryKey: ["/api/reviews", foodTruck?.id],
-    queryFn: () => fetch(`/api/reviews/${foodTruck?.id}`).then(res => res.json()),
+    queryFn: () => fetch(getApiUrl(`/api/reviews/${foodTruck?.id}`)).then(res => res.json()),
     enabled: !!foodTruck?.id,
   });
 
@@ -97,15 +98,18 @@ export default function Reviews() {
     createMutation.mutate(data);
   };
 
-  const averageRating = reviews.length > 0
-    ? reviews.reduce((sum: number, review: any) => sum + review.rating, 0) / reviews.length
+  // Ensure reviews is always an array before using array methods
+  const reviewsArray = Array.isArray(reviews) ? reviews : [];
+  
+  const averageRating = reviewsArray.length > 0
+    ? reviewsArray.reduce((sum: number, review: any) => sum + review.rating, 0) / reviewsArray.length
     : 0;
 
   const ratingDistribution = [5, 4, 3, 2, 1].map(rating => ({
     rating,
-    count: reviews.filter((review: any) => review.rating === rating).length,
-    percentage: reviews.length > 0 
-      ? (reviews.filter((review: any) => review.rating === rating).length / reviews.length) * 100
+    count: reviewsArray.filter((review: any) => review.rating === rating).length,
+    percentage: reviewsArray.length > 0 
+      ? (reviewsArray.filter((review: any) => review.rating === rating).length / reviewsArray.length) * 100
       : 0
   }));
 
@@ -270,7 +274,7 @@ export default function Reviews() {
                 {renderStars(Math.round(averageRating), "h-5 w-5")}
               </div>
               <p className="text-sm text-muted-foreground mt-2">
-                Based on {reviews.length} reviews
+                Based on {reviewsArray.length} reviews
               </p>
             </CardContent>
           </Card>
@@ -283,7 +287,7 @@ export default function Reviews() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <span className="text-3xl font-bold text-foreground">{reviews.length}</span>
+              <span className="text-3xl font-bold text-foreground">{reviewsArray.length}</span>
               <p className="text-sm text-muted-foreground mt-2">
                 Customer feedback received
               </p>
@@ -336,7 +340,7 @@ export default function Reviews() {
                 <CardTitle>Recent Reviews</CardTitle>
               </CardHeader>
               <CardContent>
-                {reviews.length === 0 ? (
+                {reviewsArray.length === 0 ? (
                   <div className="text-center py-8">
                     <MessageSquare className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-foreground mb-2">No reviews yet</h3>
@@ -353,7 +357,7 @@ export default function Reviews() {
                   </div>
                 ) : (
                   <div className="space-y-4 max-h-96 overflow-y-auto">
-                    {reviews.map((review: any) => (
+                    {reviewsArray.map((review: any) => (
                       <div key={review.id} className="border-b border-gray-100 pb-4 last:border-b-0">
                         <div className="flex items-start justify-between mb-2">
                           <div>

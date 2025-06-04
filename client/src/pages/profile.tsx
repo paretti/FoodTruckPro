@@ -15,6 +15,7 @@ import { Truck, Phone, Globe, MapPin, Star, Users, LogOut } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { getApiUrl } from "@/lib/config";
 
 const foodTruckSchema = z.object({
   name: z.string().min(1, "Food truck name is required"),
@@ -134,7 +135,7 @@ export default function Profile() {
           </div>
           <Button
             variant="outline"
-            onClick={() => window.location.href = '/api/logout'}
+            onClick={() => window.location.href = getApiUrl('/api/logout')}
             className="text-muted-foreground hover:text-foreground"
           >
             <LogOut className="h-4 w-4 mr-2" />

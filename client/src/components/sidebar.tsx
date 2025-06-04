@@ -14,6 +14,7 @@ import {
   Beef,
   LogOut
 } from "lucide-react";
+import { getApiUrl } from "@/lib/config";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: BarChart3 },
@@ -93,10 +94,11 @@ export default function Sidebar() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => window.location.href = '/api/logout'}
-              className="text-muted-foreground hover:text-foreground"
+              onClick={() => window.location.href = getApiUrl('/api/logout')}
+              className="flex items-center text-muted-foreground hover:text-foreground"
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="h-4 w-4 mr-3" />
+              Sign Out
             </Button>
           </div>
         </div>

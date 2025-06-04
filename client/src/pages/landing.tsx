@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Truck, BarChart3, MapPin, Package, Star, Users } from "lucide-react";
+import { getApiUrl } from "@/lib/config";
 
 export default function Landing() {
   return (
@@ -22,7 +23,7 @@ export default function Landing() {
             <Button
               size="lg"
               className="bg-primary hover:bg-primary/90 text-white px-8 py-3 text-lg"
-              onClick={() => window.location.href = '/api/login'}
+              onClick={() => window.location.href = getApiUrl('/api/login')}
             >
               Get Started
             </Button>
@@ -148,11 +149,10 @@ export default function Landing() {
           </p>
           <Button
             size="lg"
-            variant="secondary"
-            className="bg-white text-primary hover:bg-white/90 px-8 py-3 text-lg"
-            onClick={() => window.location.href = '/api/login'}
+            className="bg-primary hover:bg-primary/90 text-white px-8 py-3 text-lg"
+            onClick={() => window.location.href = getApiUrl('/api/login')}
           >
-            Start Your Free Trial
+            Start Your Journey
           </Button>
         </div>
       </div>

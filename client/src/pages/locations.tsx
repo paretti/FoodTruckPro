@@ -15,6 +15,7 @@ import { Plus, MapPin, Trash2, Edit, Check } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { getApiUrl } from "@/lib/config";
 
 const locationSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -39,7 +40,7 @@ export default function Locations() {
 
   const { data: locations = [] } = useQuery({
     queryKey: ["/api/locations", foodTruck?.id],
-    queryFn: () => fetch(`/api/locations/${foodTruck?.id}`).then(res => res.json()),
+    queryFn: () => fetch(getApiUrl(`/api/locations/${foodTruck?.id}`)).then(res => res.json()),
     enabled: !!foodTruck?.id,
   });
 
@@ -163,7 +164,7 @@ export default function Locations() {
 
     try {
       // Get Mapbox token from backend
-      const tokenResponse = await fetch('/api/mapbox-token');
+      const tokenResponse = await fetch(getApiUrl('/api/mapbox-token'));
       if (!tokenResponse.ok) {
         throw new Error('Failed to get Mapbox token');
       }
@@ -223,6 +224,9 @@ export default function Locations() {
     setShowSuggestions(false);
     setAddressSuggestions([]);
   };
+
+  // Ensure locations is always an array before using array methods
+  const locationsArray = Array.isArray(locations) ? locations : [];
 
   return (
     <div>
@@ -378,7 +382,7 @@ export default function Locations() {
       </header>
 
       <main className="p-8">
-        {locations.length === 0 ? (
+        {locationsArray.length === 0 ? (
           <div className="text-center py-12">
             <MapPin className="h-16 w-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-foreground mb-2">No locations yet</h3>
@@ -395,7 +399,7 @@ export default function Locations() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {locations.map((location: any) => (
+            {locationsArray.map((location: any) => (
               <Card key={location.id} className="relative">
                 <CardHeader>
                   <div className="flex items-start justify-between">
