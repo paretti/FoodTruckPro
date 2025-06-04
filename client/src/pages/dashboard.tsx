@@ -33,10 +33,14 @@ export default function Dashboard() {
     enabled: !!foodTruck?.id,
   });
 
-  const activeLocation = locations?.find(loc => loc.isActive);
-  const lowStockItems = inventory?.filter(item => 
+  // Ensure locations and inventory are always arrays before using array methods
+  const locationsArray = Array.isArray(locations) ? locations : [];
+  const inventoryArray = Array.isArray(inventory) ? inventory : [];
+
+  const activeLocation = locationsArray.find((loc: any) => loc.isActive);
+  const lowStockItems = inventoryArray.filter((item: any) => 
     item.lowStockThreshold && Number(item.currentStock) <= Number(item.lowStockThreshold)
-  ) || [];
+  );
 
   if (!foodTruck) {
     return (
